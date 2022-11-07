@@ -1,0 +1,191 @@
+
+Step 4- Further Cleaning the data, Coding Robotic and non robotic hospitals and then coding for high volume hospitals.
+
+Adding totals for open, laproscopic and robtoic procedures. 
+
+And robotic versus non robotic Hospitals were flagged, this analysis is for COLECTOMY.
+
+
+use "file path"
+
+
+tab typeofproc2
+
+tab YEAR typeofproc
+
+codebook MCARE_NBR
+
+
+tab YEAR typeofproc
+
+tab YEAR typeofproc2
+
+codebook MCARE_NBR
+
+tab MCARE_NBR YEAR if typeofproc == 3 
+
+*keep if IDX == 1
+*sort MCARE_NBR 
+*by MCARE_NBR : gen idx_rob = 1 if (Tot_Rob !=0 & IdX ==1)  
+
+*tab MCARE_NBR if Tot_Rob != 0
+
+*tab MCARE_NBR if Tot_Rob != 0, sort 
+
+*codebook MCARE_NBR if Tot_Rob != 0
+
+
+*NOT SHOWING THE MEDICARE PROVIDER ID BECAUSE OF DUA BINDING
+
+gen idx_rob = .
+
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+replace idx_rob = 0 if MCARE_NBR == ""
+
+tab idx_rob
+replace idx_rob = 1 if idx_rob == .
+
+tab idx_rob
+
+codebook MCARE_NBR if idx_rob == 0
+*36
+codebook MCARE_NBR if idx_rob == 1
+*118 robotic hospitals 
+
+
+*NOT SHOWING THE MEDICARE PROVIDER ID BECAUSE OF DUA BINDING*
+
+gen idx_rob2 = .
+
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+replace idx_rob2 = 1 if MCARE_NBR == "
+
+replace idx_rob2 = 0 if idx_rob2 == . &  idx_rob == 1
+
+tab idx_rob2
+
+codebook MCARE_NBR if idx_rob2 == 0
+*low voume robtic hospitals 
+codebook MCARE_NBR if idx_rob2 == 1
+* high volume robotic hospitals 
+
+codebook MCARE_NBR 
+sort MCARE_NBR 
+* the first obs is always an index
+by MCARE_NBR : gen id = _n == 1
+tab id 
+
+*drop Robot
+gen Robot = 1 if idx_rob == 1 & id == 1 
+replace Robot = 0 if Robot == . & id== 1 
+
+tab Robot
+
+tab idx_rob2
+
+codebook MCARE_NBR if Robot == 0
+codebook MCARE_NBR if Robot == 1
+
+codebook MCARE_NBR if idx_rob2 == 0
+codebook MCARE_NBR if idx_rob2 == 1
+
+tab PRO_CODE if Robot == 0
+tab PRO_CODE if Robot == 1
+
+tab typeofproc if idx_rob== 0
+tab typeofproc if idx_rob== 1
+
+tab typeofproc if idx_rob2== 0
+tab typeofproc if idx_rob2== 1
+
+sort MCARE_NBR YEAR 
+
+by MCARE_NBR YEAR : gen IDX = _n == 1
+* the first obs is always an index
+by MCARE_NBR : gen IDX2 = _n == 1
+
+* ADDING THE TOTAL OPEN/LAP/ROB PROCEDURES FOR EACH FACILITY EACH YEAR 
+bysort MCARE_NBR YEAR : egen Tot_Open = sum(typeofproc == 1)
+bysort MCARE_NBR YEAR : egen Tot_Lap = sum(typeofproc == 2)
+bysort MCARE_NBR YEAR : egen Tot_Rob = sum(typeofproc == 3)
+bysort MCARE_NBR YEAR : egen Tot_Vol = sum(typeofproc == 1 | typeofproc == 2 |typeofproc == 3)
+
+bysort MCARE_NBR : egen Tot_Vol_All = sum(Tot_Vol) if IDX == 1
+gen Tot_Vol_All2 = Tot_Vol_All if IDX2 == 1
+
+
+order YEAR MCARE_NBR CCRatio Tot_Open Tot_Lap Tot_Rob Tot_Vol Tot_Vol_All Tot_Vol_All2
+
+*Go to browser and select (filter on IDX == 1)
+
+tab typeofproc if MCARE_NBR == ""
+
+
+drop OTHDIAG1 OTHDIAG2 OTHDIAG3 OTHDIAG4 OTHDIAG5 OTHDIAG6 OTHDIAG7 OTHDIAG8 OTHDIAG9 OTHDIAG10 OTHDIAG11 OTHDIAG12 OTHDIAG13 OTHDIAG14 OTHDIAG15 OTHDIAG16 OTHDIAG17 OTHDIAG18 OTHDIAG19 OTHDIAG20 OTHDIAG21 OTHDIAG22 OTHDIAG23 OTHDIAG24 OTHDIAG25 OTHDIAG26 OTHDIAG27 OTHDIAG28 OTHDIAG29 OTHDIAG30
+
+drop OTHPROC1 OTHPROC2 OTHPROC3 OTHPROC4 OTHPROC5 OTHPROC6 OTHPROC7 OTHPROC8 OTHPROC9 OTHPROC10 OTHPROC11 OTHPROC12 OTHPROC13 OTHPROC14 OTHPROC15 OTHPROC16 OTHPROC17 OTHPROC18 OTHPROC19 OTHPROC20 OTHPROC21 OTHPROC22 OTHPROC23 OTHPROC24 OTHPROC25 OTHPROC26 OTHPROC27 OTHPROC28 OTHPROC29 OTHPROC30
+
+drop ATT_PHYID ATT_PHYNPI OPER_PHYID OPER_PHYNPI FACLNBR FAC_NAME PRO_CODE FAC_REGION FAC_COUNTY TYPE_SERV
+
+drop EDHR_ARR ADM_TIME DIS_TIME ZIPCODE PTSTATE PTCOUNTY PTCOUNTRY MSDRG
+
+drop ROOMCHGS NUR1CHGS NUR2CHGS NUR3CHGS ICUCHGS CCUCHGS PHARMCHGS MEDCHGS ONCOCHGS LABCHGS RADCHGS ANESCHGS RESPCHGS PHYTHCHGS OCCUPCHGS SPEECHGS ERCHGS CARDIOCHGS TRAUMACHGS RECOVCHGS LABORCHGS OBSERCHGS BEHAVCHGS OTHERCHGS
+
+drop CM_STROKE CM_DEMENTIA CM_PUD CM_PARALYSIS CM_LIVERSEVERE CM_HIV
+
+drop PNEUMONIA PLEURAL_EFFUSION PNEUMOTHORAX PULMONARY_OEDEMA PHLEBITIS_THROMBOPHLEBITIS ANGINA_PECTORIS CARDIAC_ARREST CARDIOVASCULAR_SHOCK SEPSIS SURGICAL_SITE PERICARDITIS BLEEDING EMBOLISM ANAESTHESIA DELIRIUM_SOMNOLENCE CEREBRAL_INFRACTION SEVERE_STRESS COGNITION SHOCK ANAPHYLACTIC_SHOCK INJURY_PROCEDURES
+
+drop fyb fye status TotalCost Inp_Charges Out_Charges HOSPITAL_NAME CITY STATE
+
+
+
+save "file path",replace

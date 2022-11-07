@@ -1,0 +1,66 @@
+
+Step 1- Basic cleaning and data subset(following code is for the year 2020 data file) It was repeated for 2017-2020
+
+use "file path"
+
+drop _merge
+
+rename *, upper  
+
+codebook MCARE_NBR FACLNBR
+
+mdesc MCARE_NBR FACLNBR
+
+drop if AGE<18
+drop if AGE==.
+
+replace PRINDIAG = subinstr(PRINDIAG, ".", "",.)
+
+replace PRINPROC = subinstr(PRINPROC, ".", "",.)
+
+order PRINPROC OTHPROC1 OTHPROC2 OTHPROC3 OTHPROC4 OTHPROC5 OTHPROC6 OTHPROC7 OTHPROC8 OTHPROC9 OTHPROC10 OTHPROC11 OTHPROC12 OTHPROC13 OTHPROC14 OTHPROC15 OTHPROC16 OTHPROC17 OTHPROC18 OTHPROC19 OTHPROC20 OTHPROC21 OTHPROC22 OTHPROC23 OTHPROC24 OTHPROC25 OTHPROC26 OTHPROC27 OTHPROC28 OTHPROC29 OTHPROC30, first 
+	
+isid SYS_RECID, sort
+
+***********************************************************************************************************
+
+**************************************************************************************************************
+*** Colectomy
+
+gen Open_Col= . 
+
+foreach v of var PRINPROC{
+replace  Open_Col  = 1 if `v' == "0DBE0ZZ" | `v' == "0DBE7ZZ"| `v' == "0DTH0ZZ"| `v' == "0DTH7ZZ"| `v' == "0DTF0ZZ" | `v' == "0DTF7ZZ"| `v' == "0DTK0ZZ"
+}
+
+gen Lap_Col= . 
+
+foreach v of var PRINPROC{
+replace  Lap_Col  = 1 if `v' == "0DBE4ZZ" | `v' == "0DTH4ZZ"| `v' == "0DTF4ZZ"
+}
+
+gen Rob_Col= . 
+
+foreach v of var OTHPROC1-OTHPROC30{
+replace  Rob_Col  = 1 if `v' == "8E0W0CZ" & Lap_Col == 1| `v' == "8E0W4CZ" & Lap_Col == 1| `v' == "8E0W3CZ" & Lap_Col == 1| `v' == "8E0W8CZ" & Lap_Col == 1| `v' == "8E0W7CZ" & Lap_Col == 1| `v' == "8E0WXCZ" & Lap_Col == 1 |`v' == "8E0W0CZ" & Open_Col == 1| `v' == "8E0W4CZ" & Open_Col == 1| `v' == "8E0W3CZ" & Open_Col == 1| `v' == "8E0W8CZ" & Open_Col == 1| `v' == "8E0W7CZ" & Open_Col == 1| `v' == "8E0WXCZ" & Open_Col == 1 
+}
+
+*********************************************
+
+gen idx_pr = . 
+
+replace idx_pr = 1 if  idx_col == 1  
+
+replace idx_pr = 2 if  idx_col == 2 
+
+replace idx_pr = 3 if  idx_col == 3 
+ 
+
+tab idx_col 
+
+ 
+tab idx_pr 
+
+drop if idx_pr == .
+
+save "file path"

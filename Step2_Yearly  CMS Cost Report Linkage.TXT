@@ -1,0 +1,30 @@
+
+Step 2- Further Cleaning the data, in this step the yearly FL AHCA files were linked with the CMS Cost Report Data
+
+This step was needed to get the Hospital Specific Cost to Charge ratios, which shall be used to derive Cost from the Charges 
+
+This step was repeated on 2017-2020
+
+use "file path"
+
+use "\FL AHCA_2017_V2.dta"
+
+tab YEAR 
+
+codebook MCARE_NBR
+*174
+
+drop _merge 
+
+merge m:1 MCARE_NBR using  "\Hospital CCR Reports\CCR_2017.dta"
+
+tab YEAR if _merge == 3
+
+codebook MCARE_NBR if _merge == 3
+
+mdesc CCRatio if _merge == 3
+
+keep if _merge == 3 
+drop _merge 
+
+save "file path",replace

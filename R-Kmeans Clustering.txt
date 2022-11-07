@@ -1,0 +1,133 @@
+##Reading Data
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+```{r}
+options(max.print=999999999)
+options(warn=-1)
+library(caret)
+library(readstata13)
+library(TSstudio)
+library(caret)
+library(ROCR)
+library(pROC)
+library(xgboost)
+library(gbm)
+library(dplyr)
+library(gtsummary)
+library(xlsx)
+library(rJava)
+library(ggplot2)
+library(segmented)
+library(rpart)
+library(tidyverse)
+library(modelr)
+library(dotwhisker)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(broom)
+library(lme4)
+library(MuMIn)
+library(AICcmodavg)
+library(psycho)
+library(performance)
+library(pbkrtest)
+library(estimability)
+library(emmeans)
+library(lsmeans)
+library(ggiraph)
+library(ggiraphExtra)
+require(plyr)
+
+data3<-read.dta13(file = "path.dta")
+
+# looking at the dimensions of the dataset
+dim(data3)
+
+# looking at any missing values in our dataset
+sum(is.na(data3))
+
+# taking a look at the structure of the varaibles in the dataset
+str(data3[1:22])
+
+data3[c(3:14)] <- lapply(data3[,c(3:14)] , as.numeric)
+data3$typeofproc4 <- as.factor(data3$typeofproc4)
+data3$typeofproc3 <- as.factor(data3$typeofproc3)
+data3$typeofproc2 <- as.factor(data3$typeofproc2)
+data3$typeofproc <- as.factor(data3$typeofproc)
+
+
+# taking a look at the structure of the varaibles in the dataset
+str(data3[1:22])
+
+#subset to colectomy only 
+data4<- subset(data3, typeofproc4 == "Colectomy" )
+dim(data4)
+
+#subset to Lap and robotic colectomy only 
+data2<- subset(data4, typeofproc2 != "6-Open_Col" )
+dim(data2)
+
+#Cross check from overall data
+print(table(data3$typeofproc4))
+
+print(table(data3$typeofproc2))
+
+
+
+
+
+```
+#Running K Means on Cost Per Patient Data
+```{r}
+
+library(cluster) 
+library(gridExtra)
+library(grid)
+library(purrr)
+set.seed(123)
+# function to calculate total intra-cluster sum of square 
+iss <- function(k) {
+  kmeans(data2[,13],k,iter.max=1000,nstart=100,algorithm="Lloyd" )$tot.withinss
+}
+k.values <- 1:10
+iss_values <- map_dbl(k.values, iss)
+plot(k.values, iss_values,
+    type="b", pch = 19, frame = FALSE, 
+    xlab="Number of clusters K",
+    ylab="Total intra-clusters sum of squares")
+
+
+
+k4<-kmeans(data2[,13],4,iter.max=1000,nstart=100,algorithm="Lloyd")
+s2<-plot(silhouette(k4$cluster,dist(data2[,13],"euclidean")))
+
+#Total Cost Real By LOS 
+
+set.seed(1)
+ggplot(data2, aes(x= LOSDAYS , y = COST_Real)) + 
+  geom_point(stat = "identity", aes(color = as.factor(k4$cluster))) +
+  scale_color_discrete(name=" ",
+              breaks=c("1", "2", "3","4"),
+              labels=c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4")) 
+
+
+set.seed(1)
+ggplot(data2, aes(x= COST_Real , y = typeofproc3)) + 
+  geom_point(stat = "identity", aes(color = as.factor(k4$cluster))) +
+  scale_color_discrete(name=" ",
+              breaks=c("1", "2", "3","4"),
+              labels=c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4")) 
+
+data1 <- cbind(data2,k4$cluster)
+
+
+save.dta13(data1,file = "path")
+
+
+
+
+
+
+```

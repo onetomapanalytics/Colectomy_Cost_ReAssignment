@@ -1,0 +1,125 @@
+
+Step 7- Analyzing the Data which was returned by the predictive model after re assignment of Cost Clusters 
+
+*Code is shown for CART AND GBM
+
+
+
+*Reading the file wihc is the cluster assignment from R Cart Model 
+***************************************************
+use "file path"
+
+tab Cluster 
+
+*Low 
+*Medium 
+*High 
+
+tab Cluster
+
+tab pred_tree_final if Cluster == 1
+tab pred_tree_final if Cluster == 2
+tab pred_tree_final if Cluster == 3
+
+gen Cluster1 = "Change"  if Cluster == 1 & pred_tree_final == 2 
+gen Cluster2 = "Change"  if Cluster == 2 & pred_tree_final == 1 
+gen Cluster3 = "Change1"  if Cluster == 3 & pred_tree_final == 1 
+replace Cluster3 = "Change2"  if Cluster == 3 & pred_tree_final == 2 
+
+tab Cluster1
+tab Cluster2
+tab Cluster3 
+
+gen Cluster4 =   "Change1-2" if Cluster1 == "Change"
+replace Cluster4   = "Change2-1" if Cluster2== "Change"
+replace Cluster4   = "Change3-1" if Cluster3== "Change1"
+replace Cluster4   = "Change3-2" if Cluster3== "Change2"
+replace Cluster4   ="NoChange" if Cluster4 =="" 
+
+tab Cluster4 Cluster 
+
+tab CCIcat Cluster 
+
+gen Change = "NoChange" if Cluster4 =="NoChange"
+replace Change = "LowtoHigh" if Cluster4 =="Change1-2"
+replace Change = "HightoLow" if Cluster4 =="Change2-1" |  Cluster4 =="Change3-1"|  Cluster4 =="Change3-2"
+
+tab Change
+
+
+gen Change2 = 0 if Change  == "NoChange"
+replace Change2 = 1 if Change  == "HightoLow"
+
+tab Change2
+
+save  "file path"
+
+
+
+clear 
+*Reading the file wihc is the cluster assignment from R GBM Model 
+***************************************************
+use "file path"
+
+tab Cluster 
+
+*Low 
+*Medium 
+*High 
+
+tab Cluster
+
+tab pred_gbm_final if Cluster == 1
+tab pred_gbm_final if Cluster == 2
+tab pred_gbm_final if Cluster == 3
+
+gen Cluster1 = "Change2"  if Cluster == 1 & pred_gbm_final == 2 
+replace Cluster1 = "Change3"  if Cluster == 1 & pred_gbm_final == 3 
+
+gen Cluster2 = "Change2"  if Cluster == 2 & pred_gbm_final == 1 
+replace Cluster2 = "Change3"  if Cluster == 2 & pred_gbm_final == 3 
+
+gen Cluster3 = "Change1"  if Cluster == 3 & pred_gbm_final == 1 
+replace Cluster3 = "Change2"  if Cluster == 3 & pred_gbm_final == 2 
+
+tab Cluster1
+tab Cluster2
+tab Cluster3 
+
+gen Cluster4 =   "Change1-2" if Cluster1 == "Change2"
+replace Cluster4 =   "Change1-3" if Cluster1 == "Change3"
+replace Cluster4   = "Change2-1" if Cluster2== "Change2"
+replace Cluster4   = "Change2-3" if Cluster2== "Change3"
+replace Cluster4   = "Change3-1" if Cluster3== "Change1"
+replace Cluster4   = "Change3-2" if Cluster3== "Change2"
+replace Cluster4   ="NoChange" if Cluster4 =="" 
+
+tab Cluster4 
+
+Cluster 
+
+tab CCIcat Cluster 
+
+gen Change = "NoChange" if Cluster4 =="NoChange"
+replace Change = "LowtoHigh" if Cluster4 =="Change1-2"
+replace Change = "LowtoHigh" if Cluster4 =="Change1-3"
+replace Change = "LowtoHigh" if Cluster4 =="Change2-3"
+replace Change = "HightoLow" if Cluster4 =="Change2-1" |  Cluster4 =="Change3-1"|  Cluster4 =="Change3-2"
+
+tab Change 
+
+Cluster 
+
+
+gen Change2 = 0 if Change  == "NoChange"
+replace Change2 = 1 if Change  == "HightoLow"
+
+tab Change2
+
+save  "file path"
+
+
+
+
+
+

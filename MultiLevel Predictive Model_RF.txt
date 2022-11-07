@@ -1,0 +1,198 @@
+---
+title: "Multi Class Models RANDOM FOREST"
+author: "HMJ"
+output: html_document
+---
+
+##Reading Data
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+#Running Multi Class RF Model
+```{r}
+
+options(max.print=999999999)
+options(warn=-1)
+library(caret)
+library(readstata13)
+library(TSstudio)
+library(caret)
+library(ROCR)
+library(pROC)
+library(xgboost)
+library(gbm)
+library(dplyr)
+library(gtsummary)
+library(xlsx)
+library(rJava)
+library(ggplot2)
+library(segmented)
+library(rpart)
+library(tidyverse)
+library(modelr)
+library(dotwhisker)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(broom)
+library(lme4)
+library(MuMIn)
+library(AICcmodavg)
+library(psycho)
+library(performance)
+library(pbkrtest)
+library(estimability)
+library(emmeans)
+library(lsmeans)
+library(ggiraph)
+library(ggiraphExtra)
+require(plyr)
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle)
+
+#reading the robotic Data
+data3<-read.dta13(file = "path")
+
+# looking at the dimensions of the dataset
+dim(data3)
+
+# looking at any missing values in our dataset
+sum(is.na(data3))
+
+#data3$SYS_RECID <- NULL 
+
+# taking a look at the structure of the varaibles in the dataset
+str(data3)
+
+data3[c(2:3)] <- lapply(data3[,c(2:3)] , as.numeric)
+data3[c(5:22)] <- lapply(data3[,c(5:22)] , as.factor)
+data3$Cluster <-as.factor(data3$Cluster)
+
+
+# taking a look at the structure of the varaibles in the dataset
+str(data3)
+
+#Cross check from overall data
+print(table(data3$Cluster))
+
+
+#reading the lap Data
+data4<-read.dta13(file = "path")
+
+# looking at the dimensions of the dataset
+dim(data4)
+
+# looking at any missing values in our dataset
+sum(is.na(data4))
+
+#data4$SYS_RECID <- NULL 
+
+# taking a look at the structure of the varaibles in the dataset
+str(data4)
+
+data4[c(2:3)] <- lapply(data4[,c(2:3)] , as.numeric)
+data4[c(5:22)] <- lapply(data4[,c(5:22)] , as.factor)
+data4$Cluster <-as.factor(data4$Cluster)
+
+# taking a look at the structure of the varaibles in the dataset
+str(data4)
+
+#Cross check from overall data
+print(table(data4$Cluster))
+
+```
+#Running Multi Class RANDOM FOREST Model ROBOTIC
+```{r}
+options(warn=-1)
+library(caret)
+library(ROCR)
+library(pROC)
+library(xgboost)
+library(gbm)
+library(dplyr)
+library(gtsummary)
+library(xlsx)
+library(rJava)
+library(ggplot2)
+library(lime)
+library(data.table)
+
+# split data2 into a train and a test set; train, test, and model.
+set.seed(1234)
+ind <- sample(2, nrow(data3), replace=TRUE, prob=c(0.7, 0.3))
+train.rob <- data3[ind==1,]
+test.rob <- data3[ind==2,]
+
+frmla = Cluster ~ AGE+SEX+ADM_PRIOR+ADMSRC+PAYER+CM_MI+CM_CHF+CM_PVD+CM_PULMONARY+CM_RHEUMATIC+CM_LIVERMILD+CM_DM+CM_DMCX+CM_RENAL+CM_CANCER+CM_METS+CCIcat+Aweekend+ETHNICITY+RACE
+
+set.seed(1234)
+rf.Control <- trainControl(method='cv', number=10, search = 'grid')
+#create tunegrid with 15 values from 1:15 for mtry to tunning model. Our train function will change number of entry variable at each split according to tunegrid. 
+tunegrid <- expand.grid(.mtry = (1:15)) 
+
+rf.rob <- train(frmla, data = train.rob, 
+
+                  method='rf', 
+
+                  trControl=rf.Control,  
+
+                  metric = "Accuracy",
+
+                 tunegrid=tunegrid)
+
+#Looking at relative influence of each predictor to model
+
+print(rf.rob)
+
+#sum.rf.lap<- (summary(rf.lap)) ; sum.rf.lap
+
+pred_rf.rob = predict(rf.rob, test.rob)
+
+confusionMatrix(data = pred_rf.rob, test.rob$Cluster)
+
+```
+#Running Multi Class RANDOM FOREST Model LAP
+```{r}
+# split data2 into a train and a test set; train, test, and model.
+set.seed(3547)
+ind <- sample(2, nrow(data4), replace=TRUE, prob=c(0.7, 0.3))
+train.lap <- data4[ind==1,]
+test.lap <- data4[ind==2,]
+
+frmla = Cluster ~ AGE+SEX+ADM_PRIOR+ADMSRC+PAYER+CM_MI+CM_CHF+CM_PVD+CM_PULMONARY+CM_RHEUMATIC+CM_LIVERMILD+CM_DM+CM_DMCX+CM_RENAL+CM_CANCER+CM_METS+CCIcat+Aweekend+ETHNICITY+RACE
+
+set.seed(1234)
+rf.Control <- trainControl(method='cv', number=10, search = 'grid')
+#create tunegrid with 15 values from 1:15 for mtry to tunning model. Our train function will change number of entry variable at each split according to tunegrid. 
+tunegrid <- expand.grid(.mtry = (1:15)) 
+
+rf.lap <- train(frmla, data = train.lap, 
+
+                  method='rf', 
+
+                  trControl=rf.Control,  
+
+                  metric = "Accuracy",
+
+                 tunegrid=tunegrid)
+
+print(rf.lap)
+
+#sum.rf.lap<- (summary(rf.lap)) ; sum.rf.lap
+
+
+pred_rf.lap = predict(rf.lap, test.lap)
+confusionMatrix(data = pred_rf.lap, test.lap$Cluster)
+
+#Predictions on Rob Data using the Lap Model 
+pred_rf_final = predict(rf.lap, data3)
+
+data <- cbind(data3,pred_rf_final)
+
+confusionMatrix(data = pred_rf_final, data3$Cluster)
+
+
+save.dta13(data,file = "path")
+
+```

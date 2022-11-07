@@ -1,0 +1,88 @@
+
+Step 5- Runnig some summary statistics on the Charges and Cost on the overall data and then Robotic Hospitals Only
+
+use "file path"
+
+codebook MCARE_NBR
+
+tab Robot
+tab idx_rob2
+tab idx_rob
+
+tab typeofproc if idx_rob== 0
+tab typeofproc if idx_rob== 1
+
+drop if idx_rob == 1 
+
+tab typeofproc 
+
+
+summarize TCHGS 
+summarize TCHGS if typeofproc == 1
+summarize TCHGS if typeofproc == 2
+summarize TCHGS if typeofproc == 3
+
+summarize COST
+summarize COST if typeofproc == 1
+summarize COST if typeofproc == 2
+summarize COST if typeofproc == 3
+
+
+anova TCHGS typeofproc 
+tabstat TCHGS, statistics( mean sd skewness ) by(typeofproc)	
+pwcompare typeofproc, mcompare(tukey) effects
+
+
+anova COST typeofproc 
+tabstat COST, statistics( mean sd skewness ) by(typeofproc)	
+pwcompare typeofproc, mcompare(tukey) effects
+
+
+
+save "file path",replace
+
+
+*******************************
+
+
+use "file path"
+
+tab Robot
+tab idx_rob2
+tab idx_rob
+
+tab typeofproc if idx_rob== 0
+tab typeofproc if idx_rob== 1
+
+tab YEAR typeofproc if idx_rob== 1
+
+tab YEAR typeofproc if idx_rob2== 1
+
+drop if idx_rob == 0 
+
+tab typeofproc 
+
+
+summarize TCHGS 
+summarize TCHGS if typeofproc == 1
+summarize TCHGS if typeofproc == 2
+summarize TCHGS if typeofproc == 3
+
+summarize COST
+summarize COST if typeofproc == 1
+summarize COST if typeofproc == 2
+summarize COST if typeofproc == 3
+
+
+anova TCHGS typeofproc 
+tabstat TCHGS, statistics( mean sd skewness ) by(typeofproc)	
+pwcompare typeofproc, mcompare(tukey) effects
+
+
+anova COST typeofproc 
+tabstat COST, statistics( mean sd skewness ) by(typeofproc)	
+pwcompare typeofproc, mcompare(tukey) effects
+
+
+
+save "file path",replace

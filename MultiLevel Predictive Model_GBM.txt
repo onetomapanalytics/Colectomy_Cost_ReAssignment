@@ -1,0 +1,217 @@
+---
+title: "Multi Class Models GBM"
+author: "HMJ"
+output: html_document
+---
+
+##Reading Data
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+#Running Multi Class Tree Model
+```{r}
+
+options(max.print=999999999)
+options(warn=-1)
+library(caret)
+library(readstata13)
+library(TSstudio)
+library(caret)
+library(ROCR)
+library(pROC)
+library(xgboost)
+library(gbm)
+library(dplyr)
+library(gtsummary)
+library(xlsx)
+library(rJava)
+library(ggplot2)
+library(segmented)
+library(rpart)
+library(tidyverse)
+library(modelr)
+library(dotwhisker)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(broom)
+library(lme4)
+library(MuMIn)
+library(AICcmodavg)
+library(psycho)
+library(performance)
+library(pbkrtest)
+library(estimability)
+library(emmeans)
+library(lsmeans)
+library(ggiraph)
+library(ggiraphExtra)
+require(plyr)
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle)
+
+#reading the robotic Data
+data3<-read.dta13(file = "path")
+
+
+# looking at the dimensions of the dataset
+dim(data3)
+
+# looking at any missing values in our dataset
+sum(is.na(data3))
+
+#data3$SYS_RECID <- NULL 
+
+# taking a look at the structure of the varaibles in the dataset
+str(data3)
+
+data3[c(2:3)] <- lapply(data3[,c(2:3)] , as.numeric)
+data3[c(5:22)] <- lapply(data3[,c(5:22)] , as.factor)
+data3$Cluster <-as.factor(data3$Cluster)
+
+
+# taking a look at the structure of the varaibles in the dataset
+str(data3)
+
+#Cross check from overall data
+print(table(data3$Cluster))
+
+
+#reading the lap Data
+data4<-read.dta13(file = "path")
+
+
+# looking at the dimensions of the dataset
+dim(data4)
+
+# looking at any missing values in our dataset
+sum(is.na(data4))
+
+#data4$SYS_RECID <- NULL 
+
+# taking a look at the structure of the varaibles in the dataset
+str(data4)
+
+data4[c(2:3)] <- lapply(data4[,c(2:3)] , as.numeric)
+data4[c(5:22)] <- lapply(data4[,c(5:22)] , as.factor)
+data4$Cluster <-as.factor(data4$Cluster)
+
+# taking a look at the structure of the varaibles in the dataset
+str(data4)
+
+#Cross check from overall data
+print(table(data4$Cluster))
+
+```
+#Running Multi Class GBM Model ROBOTIC
+```{r}
+options(warn=-1)
+library(caret)
+library(ROCR)
+library(pROC)
+library(xgboost)
+library(gbm)
+library(dplyr)
+library(gtsummary)
+library(xlsx)
+library(rJava)
+library(ggplot2)
+library(lime)
+library(data.table)
+
+# split data2 into a train and a test set; train, test, and model.
+set.seed(1234)
+ind <- sample(2, nrow(data3), replace=TRUE, prob=c(0.7, 0.3))
+train.rob <- data3[ind==1,]
+test.rob <- data3[ind==2,]
+
+outcomeName <- 'Cluster'
+
+frmla = Cluster ~ AGE+SEX+ADM_PRIOR+ADMSRC+PAYER+CM_MI+CM_CHF+CM_PVD+CM_PULMONARY+CM_RHEUMATIC+CM_LIVERMILD+CM_DM+CM_DMCX+CM_RENAL+CM_CANCER+CM_METS+CCIcat+Aweekend+ETHNICITY+RACE
+
+set.seed(1234)
+gbm.Control <- trainControl(method='cv', number=10, returnResamp='none',verboseIter=TRUE)
+
+gbm.rob <- train(frmla, data = train.rob, 
+
+                  method='gbm', 
+
+                  trControl=gbm.Control,  
+
+                  metric = "Accuracy")
+
+#Looking at relative influence of each predictor to model
+
+print(gbm.rob)
+
+sum.rob<- (summary(gbm.rob)) ; sum.rob
+
+pred_gbm_rob = predict(gbm.rob, test.rob)
+
+pred_gbm_rob2 <- as.numeric(pred_gbm_rob)
+
+cm.gbm <- confusionMatrix(data = pred_gbm_rob, test.rob$Cluster); cm.gbm
+
+cm.gbm
+
+
+
+
+```
+#Running Multi Class GBM Model LAP
+```{r}
+# split data2 into a train and a test set; train, test, and model.
+set.seed(1234)
+ind <- sample(2, nrow(data4), replace=TRUE, prob=c(0.7, 0.3))
+train.lap <- data4[ind==1,]
+test.lap <- data4[ind==2,]
+
+outcomeName <- 'Cluster'
+
+frmla = Cluster ~ AGE+SEX+ADM_PRIOR+ADMSRC+PAYER+CM_MI+CM_CHF+CM_PVD+CM_PULMONARY+CM_RHEUMATIC+CM_LIVERMILD+CM_DM+CM_DMCX+CM_RENAL+CM_CANCER+CM_METS+CCIcat+Aweekend+ETHNICITY+RACE
+
+
+set.seed(1234)
+gbm.Control <- trainControl(method='cv', number=10, returnResamp='none',verboseIter=TRUE)
+
+gbm.lap <- train(frmla, data = train.lap, 
+
+                  method='gbm', 
+
+                  trControl=gbm.Control,  
+
+                  metric = "Accuracy")
+
+#Looking at relative influence of each predictor to model
+
+print(gbm.lap)
+
+sum.lap<- (summary(gbm.lap)) ; sum.lap
+
+pred_gbm_lap = predict(gbm.lap, test.lap)
+
+cm.gbm.lap <- confusionMatrix(data = pred_gbm_lap, test.lap$Cluster)
+
+cm.gbm.lap
+
+
+#F1 = 2 * (precision * recall) / (precision + recall)
+
+cm.gbm.lap$overall
+
+cm.gbm.lap$byClass
+
+
+
+#Predictions on Rob Data using the Lap Model 
+pred_gbm_final = predict(gbm.lap, data3)
+
+data <- cbind(data3,pred_gbm_final)
+
+confusionMatrix(data = pred_gbm_final, data3$Cluster)
+
+#save.dta13(data,file = "path")
+
+
+```

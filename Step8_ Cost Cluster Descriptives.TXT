@@ -1,0 +1,89 @@
+
+Step 8- In this step Cost cluster descriptive stats were run f
+
+
+clear   
+use "file path"
+
+rename k3$cluster Cluster
+
+tab Cluster typeofproc2 
+
+tab typeofproc2 
+
+keep if typeofproc2 == 8
+
+anova COST_Real Cluster 
+tabstat COST_Real, statistics( mean sd skewness ) by(Cluster)	
+pwcompare Cluster, mcompare(tukey) effects
+
+anova COST_OPR_Real Cluster 
+tabstat COST_OPR_Real, statistics( mean sd skewness ) by(Cluster)	
+pwcompare Cluster, mcompare(tukey) effects
+
+anova LOSDAYS Cluster if typeofproc2
+tabstat LOSDAYS, statistics( mean sd skewness ) by(Cluster)	
+pwcompare Cluster, mcompare(tukey) effects
+
+
+
+* Analyzing Robotic Data 
+clear 
+use "file path"
+
+tab typeofproc2
+
+tab typeofproc
+
+gen typeofproc3 = typeofproc if typeofproc2 == "6-Open_Col" |typeofproc2 == "7-Lap_Col" | typeofproc2 == "8-Rob_Col"
+
+tab typeofproc3
+
+
+summarize COST_Real  if typeofproc3 == 1
+summarize COST_Real  if typeofproc3 == 2
+summarize COST_Real  if typeofproc3 == 3
+
+
+summarize COST_OPR_Real if typeofproc3 == 1
+summarize COST_OPR_Real if typeofproc3 == 2
+summarize COST_OPR_Real if typeofproc3 == 3
+
+
+anova COST_Real typeofproc3 
+tabstat COST_Real, statistics( mean sd skewness ) by(typeofproc3)	
+pwcompare typeofproc3, mcompare(tukey) effects
+
+
+anova COST_OPR_Real typeofproc3 
+tabstat COST_OPR_Real, statistics( mean sd skewness ) by(typeofproc3)	
+pwcompare typeofproc3, mcompare(tukey) effects
+
+
+gen typeofproc4 = typeofproc3 if idx_rob2 == 1
+
+tab typeofproc4
+
+summarize COST_Real  if typeofproc4 == 1
+summarize COST_Real  if typeofproc4 == 2
+summarize COST_Real  if typeofproc4 == 3
+
+
+summarize COST_OPR_Real if typeofproc4 == 1
+summarize COST_OPR_Real if typeofproc4 == 2
+summarize COST_OPR_Real if typeofproc4 == 3
+
+
+anova COST_Real typeofproc4 
+tabstat COST_Real, statistics( mean sd skewness ) by(typeofproc4)	
+pwcompare typeofproc4, mcompare(tukey) effects
+
+
+anova COST_OPR_Real typeofproc4 
+tabstat COST_OPR_Real, statistics( mean sd skewness ) by(typeofproc4)	
+pwcompare typeofproc4, mcompare(tukey) effects
+
+
+
+
+

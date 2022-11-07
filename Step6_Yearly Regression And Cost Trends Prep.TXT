@@ -1,0 +1,82 @@
+
+Step 6- IN this step, we created a dataset to look at the Yearly trend of Cost in the Hihg Volume Hospitals
+
+* For 2017-2020
+
+use "file path"
+
+
+***********************************************************
+***********************************************************
+clear 
+
+use "file path"
+
+tab YEAR 
+
+tab YEAR typeofproc
+
+gen typeofproc5 = 1 if typeofproc == 3 & YEAR > 2017
+tab YEAR typeofproc5
+
+keep if typeofproc5 == 1
+
+drop  typeofproc4 typeofproc3 typeofproc
+
+keep  SYS_RECID COST Cost_OPR COST_Real COST_OPR_Real TIME YEAR typeofproc2 typeofproc5 
+
+save "file path"
+
+***********************************************************
+
+clear 
+
+use "file path"
+
+tab YEAR 
+
+tab YEAR typeofproc
+
+gen typeofproc6 = 1 if typeofproc == 3 & YEAR > 2018
+tab YEAR typeofproc6
+
+keep if typeofproc6 == 1
+
+drop  typeofproc4 typeofproc3 typeofproc
+
+keep  SYS_RECID COST Cost_OPR COST_Real COST_OPR_Real YEAR TIME typeofproc2 typeofproc6 
+
+tab YEAR
+
+save "file path"
+***********************************************************
+
+clear 
+use "file path"
+
+keep if typeofproc3 == "ROBOTIC"
+tab typeofproc3
+keep  SYS_RECID COST Cost_OPR COST_Real COST_OPR_Real  TIME YEAR typeofproc2 
+gen typeofproc = "ROB_17-20" 
+
+append using "file path
+append using "file path
+
+replace typeofproc = "ROB_18-20" if typeofproc5 == 1
+replace typeofproc= "ROB_19-20" if typeofproc6 == 1
+
+tab typeofproc
+
+save "file path"
+
+
+ 
+use "file path
+
+tab typeofproc2
+
+keep if typeofproc2 == "Rob_Col"
+
+
+save "file path
+ 

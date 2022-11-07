@@ -1,0 +1,182 @@
+
+Step 3- Further Cleaning the data, some cleaning steps (following code is for the year 2017-2020 data file)
+
+Firs the Cost linked files were appended/stacked to make a master yearly file and then some cleaning was performed.
+
+use "file path"
+
+
+clear 
+use "file path\FL AHCA_2017_V2.dta"
+append using "file path\FL AHCA_2018_V2.dta"
+append using "file path\FL AHCA_2019_V2.dta"
+append using "file path\FL AHCA_2020_V2.dta"
+
+tab typeofproc2 
+
+keep if  PRINDIAG == "E6601" | PRINDIAG == "E669" | PRINDIAG == "E662" | PRINDIAG == "E6609" | PRINDIAG == "E668" | PRINDIAG == "D259" | PRINDIAG == "D251" | PRINDIAG == "D252" | PRINDIAG == "D250" | PRINDIAG == "C182" | PRINDIAG == "D120" | PRINDIAG == "D122" | PRINDIAG == "C189" | PRINDIAG == "K635" | PRINDIAG == "C181" | PRINDIAG == "D374"
+
+drop POA1 POA2 POA3 POA4 POA5 POA6 POA7 POA8 POA9 POA10 POA11 POA12 POA13 POA14 POA15 POA16 POA17 POA18 POA19 POA20 POA21 POA22 POA23 POA24 POA25 POA26 POA27 POA28 POA29 POA30 ECMORB1 ECMORB2 ECMORB3 DAYS_PROC1 DAYS_PROC2 DAYS_PROC3 DAYS_PROC4 DAYS_PROC5 DAYS_PROC6 DAYS_PROC7 DAYS_PROC8 DAYS_PROC9 DAYS_PRO_A DAYS_PRO_B DAYS_PRO_C DAYS_PRO_D DAYS_PRO_E DAYS_PRO_F DAYS_PRO_G DAYS_PRO_H DAYS_PRO_I DAYS_PRO_J DAYS_PRO_K DAYS_PRO_L DAYS_PRO_M DAYS_PRO_N DAYS_PRO_O DAYS_PRO_P DAYS_PRO_Q DAYS_PRO_R DAYS_PRO_S DAYS_PRO_T DAYS_PRO_U
+
+tab idx_pr 
+
+gen CCIcat = . 
+replace CCIcat = 0 if  CCI == 0
+replace CCIcat = 1 if  CCI == 1
+replace CCIcat = 2 if  CCI >= 2 
+
+
+mdesc ATT_PHYID ATT_PHYNPI OPER_PHYID OPER_PHYNPI OTHOPER_PHYID OTHOPER_PHYNPI
+
+
+order ATTEN_PHYI ATTEN_PHYN OPER_PHYID OPER_PHYNP OTHOPER_PH OTHOPER__A, first 
+
+rename ATTEN_PHYI ATT_PHYID 
+rename ATTEN_PHYN ATT_PHYNPI
+rename OPER_PHYNP OPER_PHYNPI
+rename OTHOPER_PH OTHOPER_PHYID
+rename OTHOPER__A OTHOPER_PHYNPI
+
+
+
+codebook MCARE_NBR
+codebook OPER_PHYNP
+codebook OPER_PHYID
+
+label variable ATT_PHYID "Atending Phy FL ID"
+label variable ATT_PHYNPI "Atending Phy NPI"
+label variable OPER_PHYID "Operating Phy FL ID"
+label variable OPER_PHYNPI "Operating Phy NPI"
+
+
+rename MI CM_MI
+rename CHF CM_CHF
+rename PVD CM_PVD
+rename STROKE CM_STROKE
+rename DEMENTIA CM_DEMENTIA
+rename PULMONARY CM_PULMONARY
+rename RHEUMATIC CM_RHEUMATIC
+rename PUD CM_PUD
+rename LIVERMILD CM_LIVERMILD
+rename DM CM_DM
+rename DMCX CM_DMCX
+rename PARALYSIS CM_PARALYSIS
+rename RENAL CM_RENAL
+rename CANCER CM_CANCER
+rename LIVERSEVERE CM_LIVERSEVERE
+rename METS CM_METS
+rename HIV CM_HIV
+
+
+label variable CCI "Charlson Comorbidity Index"
+label variable CM_MI "Comorbidity_Myocardial infraction"
+
+label variable CM_CHF "Comorbidity_Congestive Heart Failure"
+label variable CM_PVD "Comorbidity_Peripheral Vascular Disease "
+label variable CM_STROKE "Comorbidity_Stroke"
+label variable CM_DEMENTIA "Comorbidity_Dementia"
+label variable CM_PULMONARY "Comorbidity_Chronic Pulmonary Disease"
+label variable CM_RHEUMATIC "Comorbidity_Rheumatic Disease"
+label variable CM_PUD "Comorbidity_Peptic Ulcer Disease"
+label variable CM_LIVERMILD "Comorbidity_Mild Liver Condition"
+label variable CM_DM "Comorbidity_Diabetes Without Chronic Complications"
+label variable CM_DMCX "Comorbidity_Diabetes With Chronic Complications"
+label variable CM_PARALYSIS "Comorbidity_Paralysis"
+label variable CM_RENAL "Comorbidity_Renal disease"
+label variable CM_CANCER "Comorbidity_Cancer disease"
+label variable CM_LIVERSEVERE "Comorbidity_Severe Liver Condition"
+label variable CM_METS "Comorbidity_Metastic Solid Tumor"
+label variable CM_HIV "Comorbidity_HIV"
+
+drop NONPERFORMED_PROC REATTACHMENT_AMPUTATED_PART ALLERGY COMPLICATIONS_ABORTION OTHER_KIDNEY PRESSURE_ULCERS ARTERIES_DISORDERS FALL MECHANICAL_IMPLANTATION RUPTURE CLOSTRIDIUM_DIFFICILE MENINGITIS BACTERIAL_INTESTINAL
+drop EQUIPMENT_FAILURE
+
+
+tab DISCHSTAT 
+
+
+replace DISCHSTAT  = "01" if DISCHSTAT == "1"
+replace DISCHSTAT  = "02" if DISCHSTAT == "2"
+replace DISCHSTAT  = "03" if DISCHSTAT == "3"
+replace DISCHSTAT  = "04" if DISCHSTAT == "4"
+replace DISCHSTAT  = "05" if DISCHSTAT == "5"
+replace DISCHSTAT  = "06" if DISCHSTAT == "6"
+replace DISCHSTAT  = "07" if DISCHSTAT == "7"
+
+tab DISCHSTAT 
+
+gen Aweekend = 1 if WEEKDAY == "7" | WEEKDAY == "6"
+replace Aweekend = 0 if Aweekend == . 
+
+tab Aweekend 
+
+drop WEEKDAY
+
+tab ETHNICITY
+
+gen ETHNICITY2 = "" 
+replace ETHNICITY2  = "Hispanic Latino" if ETHNICITY == "E1"
+replace ETHNICITY2  = "A_NonHispanic" if ETHNICITY == "E2" | ETHNICITY == "E7"
+
+drop ETHNICITY
+rename ETHNICITY2 ETHNICITY
+
+tab ETHNICITY
+
+tab RACE
+
+gen RACE2 = "" 
+replace RACE2  = "A_White" if RACE == "5"
+replace RACE2  = "A_White" if RACE == "7"
+replace RACE2  = "B_Black" if RACE == "3"
+replace RACE2  = "C_Asian" if RACE == "2"
+replace RACE2  = "D_AmericanIndian" if RACE == "1"
+replace RACE2  = "E_Hawaiian_Pacific" if RACE == "4"
+replace RACE2  = "F_Other" if RACE == "6"
+
+
+drop RACE
+rename RACE2 RACE
+
+tab RACE
+
+tab PAYER 
+
+gen COST = (TCHGS*CCRatio)
+
+gen Cost_OPR = (OPRMCHGS*CCRatio)
+
+gen OPR_PC = (Cost_OPR/COST) 
+
+gen OPR_PC_CHG = (OPRMCHGS/TCHGS) 
+
+gen Non_OPR_Cost = ((TCHGS-OPRMCHGS)*CCRatio)
+
+gen Non_OPR_CHGS = (TCHGS-OPRMCHGS)
+
+
+gen COST_Real = .
+replace COST_Real = (COST * (379.9 / 357.6)) if (YEAR == 2017)
+replace COST_Real = (COST * (379.9 / 365)) if (YEAR == 2018)
+replace COST_Real = (COST * (379.9 / 370.7)) if (YEAR == 2019)
+replace COST_Real = COST if YEAR == 2020
+
+gen COST_OPR_Real = .
+replace COST_OPR_Real = (Cost_OPR * (379.9 / 357.6)) if (YEAR == 2017)
+replace COST_OPR_Real = (Cost_OPR * (379.9 / 365)) if (YEAR == 2018)
+replace COST_OPR_Real = (Cost_OPR * (379.9 / 370.7)) if (YEAR == 2019)
+replace COST_OPR_Real = Cost_OPR if YEAR == 2020
+
+tab YEAR YEAR_Cost 
+
+drop YEAR_Cost 
+
+gen MCARE_NBR_s = string(MCARE_NBR)
+mdesc MCARE_NBR MCARE_NBR_s
+drop MCARE_NBR
+rename MCARE_NBR_s MCARE_NBR
+
+codebook MCARE_NBR
+
+
+save "file path",replace
